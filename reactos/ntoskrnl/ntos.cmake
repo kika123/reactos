@@ -15,7 +15,7 @@ add_definitions(
     -DNTDDI_VERSION=0x05020400)
 
 if(NOT DEFINED NEWCC)
-    set(NEWCC FALSE)
+    set(NEWCC TRUE)
 endif()
 
 if(NEWCC)
