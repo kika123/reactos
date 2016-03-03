@@ -203,7 +203,7 @@ if(PDB_DBG)
     message(STATUS "CMAKE_OBJCOPY is ${CMAKE_OBJCOPY}")
     message(STATUS "OBJCOPY is ${OBJCOPY}")
     message(STATUS "CMAKE_DEBUG_SYMBOL_SUFFIX is ${CMAKE_DEBUG_SYMBOL_SUFFIX}")
-    set(CV2PDB "C:\\Prj\\MA\\gccpdb\\cv2pdb\\bin\\Debug\\cv2pdb.exe")
+    set(CV2PDB "C:\\Program Files (x86)\\VisualD\\cv2pdb\\cv2pdb.exe")
     set(CMAKE_C_LINK_EXECUTABLE
         "<CMAKE_C_COMPILER> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
         "${CV2PDB} <TARGET> <TARGET> ${REACTOS_BINARY_DIR}/symbols/${SYMBOL_FILE}"
