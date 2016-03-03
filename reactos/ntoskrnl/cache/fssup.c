@@ -293,7 +293,7 @@ CcUninitializeCacheMap(IN PFILE_OBJECT FileObject,
            &FileObject->FileName,
            FileObject->SectionObjectPointer);
 
-    ASSERT(UninitializeEvent == NULL);
+    //ASSERT(UninitializeEvent == NULL);
 
     /* It may not be strictly necessary to flush here, but we do just for
        kicks. */

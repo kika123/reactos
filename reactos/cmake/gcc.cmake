@@ -11,6 +11,8 @@ if(NOT DEFINED SEPARATE_DBG)
     set(SEPARATE_DBG FALSE)
 endif()
 
+set(PDB_DBG TRUE)
+
 # Dwarf based builds (no rsym)
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(NO_ROSSYM TRUE)
@@ -88,7 +90,9 @@ endif()
 
 # Debugging
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
-    if(SEPARATE_DBG)
+    if(PDB_DBG)
+        add_compile_flags("-gdwarf-2 -g2")
+    elseif(SEPARATE_DBG)
         add_compile_flags("-gdwarf-2 -ggdb")
     else()
         add_compile_flags("-gdwarf-2 -gstrict-dwarf")
@@ -134,7 +138,11 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_compile_flags("-O2 -DNDEBUG")
 else()
     if(OPTIMIZE STREQUAL "1")
-        add_compile_flags("-Os -ftracer")
+        if(PDB_DBG)
+            add_compile_flags("-O0 -fno-omit-frame-pointer")
+        else()
+            add_compile_flags("-Os -ftracer")
+        endif()
     elseif(OPTIMIZE STREQUAL "2")
         add_compile_flags("-Os")
     elseif(OPTIMIZE STREQUAL "3")
@@ -185,7 +193,38 @@ else()
     set(ARCH2 ${ARCH})
 endif()
 
-if(SEPARATE_DBG)
+if(PDB_DBG)
+    # MAKE ACTUAL PDBS HAHAHAHA
+    message(STATUS "Building PDB debug symbols")
+    file(MAKE_DIRECTORY ${REACTOS_BINARY_DIR}/symbols)
+    set(SYMBOL_FILE <TARGET_PDB>)
+    set(OBJCOPY objcopy)
+    set(EDITBIN "C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\VC\\bin\\editbin.exe")
+    message(STATUS "CMAKE_OBJCOPY is ${CMAKE_OBJCOPY}")
+    message(STATUS "OBJCOPY is ${OBJCOPY}")
+    message(STATUS "CMAKE_DEBUG_SYMBOL_SUFFIX is ${CMAKE_DEBUG_SYMBOL_SUFFIX}")
+    set(CV2PDB "C:\\Prj\\MA\\gccpdb\\cv2pdb\\bin\\Debug\\cv2pdb.exe")
+    set(CMAKE_C_LINK_EXECUTABLE
+        "<CMAKE_C_COMPILER> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
+        "${CV2PDB} <TARGET> <TARGET> ${REACTOS_BINARY_DIR}/symbols/${SYMBOL_FILE}"
+        "\"${EDITBIN}\" /NOLOGO /RELEASE <TARGET>")#"${OBJCOPY} --strip-debug <TARGET>")
+    set(CMAKE_CXX_LINK_EXECUTABLE
+        "<CMAKE_CXX_COMPILER> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>"
+        "${CV2PDB} <TARGET> <TARGET> ${REACTOS_BINARY_DIR}/symbols/${SYMBOL_FILE}"
+        "\"${EDITBIN}\" /NOLOGO /RELEASE <TARGET>")#"${OBJCOPY} --strip-debug <TARGET>")
+    set(CMAKE_C_CREATE_SHARED_LIBRARY
+        "<CMAKE_C_COMPILER> <CMAKE_SHARED_LIBRARY_C_FLAGS> <LINK_FLAGS> <CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS> -o <TARGET> <OBJECTS> <LINK_LIBRARIES>"
+        "${CV2PDB} <TARGET> <TARGET> ${REACTOS_BINARY_DIR}/symbols/${SYMBOL_FILE}"
+        "\"${EDITBIN}\" /NOLOGO /RELEASE <TARGET>")#"${OBJCOPY} --strip-debug <TARGET>")
+    set(CMAKE_CXX_CREATE_SHARED_LIBRARY
+        "<CMAKE_CXX_COMPILER> <CMAKE_SHARED_LIBRARY_CXX_FLAGS> <LINK_FLAGS> <CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS> -o <TARGET> <OBJECTS> <LINK_LIBRARIES>"
+        "${CV2PDB} <TARGET> <TARGET> ${REACTOS_BINARY_DIR}/symbols/${SYMBOL_FILE}"
+        "\"${EDITBIN}\" /NOLOGO /RELEASE <TARGET>")#"${OBJCOPY} --strip-debug <TARGET>")
+    set(CMAKE_RC_CREATE_SHARED_LIBRARY
+        "<CMAKE_C_COMPILER> <CMAKE_SHARED_LIBRARY_C_FLAGS> <LINK_FLAGS> <CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS> -o <TARGET> <OBJECTS> <LINK_LIBRARIES>"
+        "${CV2PDB} <TARGET> <TARGET> ${REACTOS_BINARY_DIR}/symbols/${SYMBOL_FILE}"
+        "\"${EDITBIN}\" /NOLOGO /RELEASE <TARGET>")#"${OBJCOPY} --strip-debug <TARGET>")
+elseif(SEPARATE_DBG)
     # PDB style debug puts all dwarf debug info in a separate dbg file
     message(STATUS "Building separate debug symbols")
     file(MAKE_DIRECTORY ${REACTOS_BINARY_DIR}/symbols)
